@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon exec --inspect app.js",
+    "dev": "nodemon exec --inspect server.js",
     "test": "jest --watch"
   },
   "keywords": [],
