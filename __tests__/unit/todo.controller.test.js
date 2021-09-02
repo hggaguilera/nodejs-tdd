@@ -1,15 +1,41 @@
+const httpMocks = require('node-mocks-http');
 const todoController = require('../../controllers/todo.controller');
 const todoModel = require('../../models/todo.model');
 const newTodo = require('../mock/data.json');
-const httpMocks = require('node-mocks-http');
+const allTodos = require('../mock/todos.json');
 
 todoModel.create = jest.fn();
+todoModel.find = jest.fn();
 let req, res, next;
 
 beforeEach(() => {
   req = httpMocks.createRequest();
   res = httpMocks.createResponse();
   next = jest.fn();
+});
+
+describe('TodoController.getTodos', () => {
+  it('should have a getTodos method', () => {
+    expect(typeof todoController.getTodos).toBe('function');
+  });
+  it('should call todoModel.find()', async () => {
+    await todoController.getTodos(req, res, next);
+    expect(todoModel.find).toHaveBeenCalledWith({});
+  });
+  it('should return 200 response code', async () => {
+    todoModel.find.mockReturnValue(allTodos);
+    await todoController.getTodos(req, res, next);
+    expect(res.statusCode).toBe(200);
+    expect(res._isEndCalled()).toBeTruthy();
+    expect(res._getJSONData()).toStrictEqual(allTodos);
+  });
+  it('should handle all errors', async () => {
+    const errorMessage = { message: 'collection does not exist' };
+    const rejectedPromise = Promise.reject(errorMessage);
+    todoModel.find.mockReturnValue(rejectedPromise);
+    await todoController.getTodos(req, res, next);
+    expect(next).toBeCalledWith(errorMessage);
+  });
 });
 
 describe('TodoController.createTodo', () => {
