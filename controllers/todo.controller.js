@@ -30,4 +30,19 @@ const getTodoById = async (req, res, next) => {
   }
 };
 
-module.exports = { createTodo, getTodos, getTodoById };
+const updateTodo = async (req, res, next) => {
+  try {
+    const updatedTodo = await todoModel.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      useFindAndModify: false,
+    });
+    if (!updatedTodo) {
+      return res.status(404).json({ message: 'item not found' });
+    }
+    return res.status(200).json(updatedTodo);
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { createTodo, getTodos, getTodoById, updateTodo };
