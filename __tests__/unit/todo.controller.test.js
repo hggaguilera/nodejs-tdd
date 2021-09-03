@@ -6,6 +6,7 @@ const allTodos = require('../mock/todos.json');
 
 todoModel.create = jest.fn();
 todoModel.find = jest.fn();
+todoModel.findById = jest.fn();
 let req, res, next;
 
 beforeEach(() => {
@@ -14,6 +15,36 @@ beforeEach(() => {
   next = jest.fn();
 });
 
+describe('TodoController.getTodoById', () => {
+  it('should have a getById function', () => {
+    expect(typeof todoController.getTodoById).toBe('function');
+  });
+  it('should call todoModel.findById()', async () => {
+    req.params.id = '61312cf0f456031ad7a8c2fa';
+    await todoController.getTodoById(req, res, next);
+    expect(todoModel.findById).toHaveBeenCalledWith('61312cf0f456031ad7a8c2fa');
+  });
+  it('should return 200 response code', async () => {
+    todoModel.findById.mockReturnValue(newTodo);
+    await todoController.getTodoById(req, res, next);
+    expect(res.statusCode).toBe(200);
+    expect(res._isEndCalled()).toBeTruthy();
+    expect(res._getJSONData()).toStrictEqual(newTodo);
+  });
+  it('should handle errors when connecting the DB', async () => {
+    const errorMessage = { message: 'done property missing' };
+    const rejectedPromise = Promise.reject(errorMessage);
+    todoModel.findById.mockReturnValue(rejectedPromise);
+    await todoController.getTodoById(req, res, next);
+    expect(next).toBeCalledWith(errorMessage);
+  });
+  it('should return 404 when item not found', async () => {
+    todoModel.findById.mockReturnValue(null);
+    await todoController.getTodoById(req, res, next);
+    expect(res.statusCode).toBe(404);
+    expect(res._isEndCalled()).toBeTruthy();
+  });
+});
 describe('TodoController.getTodos', () => {
   it('should have a getTodos method', () => {
     expect(typeof todoController.getTodos).toBe('function');

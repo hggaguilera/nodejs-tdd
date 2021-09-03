@@ -18,4 +18,16 @@ const getTodos = async (req, res, next) => {
   }
 };
 
-module.exports = { createTodo, getTodos };
+const getTodoById = async (req, res, next) => {
+  try {
+    const docId = await todoModel.findById(req.params.id);
+    if (!docId) {
+      return res.status(404).json({ message: 'item not found' });
+    }
+    return res.status(200).json(docId);
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { createTodo, getTodos, getTodoById };

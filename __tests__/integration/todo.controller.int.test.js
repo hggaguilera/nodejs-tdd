@@ -3,6 +3,7 @@ const app = require('../../app');
 const newTodo = require('../mock/data.json');
 
 const endpointUrl = '/todos/';
+let item;
 
 describe('/todos/ endpoint', () => {
   it('should POST /todos/', async () => {
@@ -24,5 +25,17 @@ describe('/todos/ endpoint', () => {
     expect(Array.isArray(response.body)).toBeTruthy();
     expect(response.body[0].title).toBeDefined();
     expect(response.body[0].done).toBeDefined();
+    item = response.body[0];
+  });
+  it('should GET an item from /todos/:id', async () => {
+    const response = await request(app).get(`${endpointUrl}${item._id}`);
+    expect(response.statusCode).toBe(200);
+    expect(response.body.title).toBe(item.title);
+    expect(response.body.done).toBe(item.done);
+  });
+  it('should return not found', async () => {
+    const response = await request(app).get(endpointUrl + '61312d4607acac1b7308977a');
+    expect(response.statusCode).toBe(404);
+    expect(response.body.message).toBe('item not found');
   });
 });
