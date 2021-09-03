@@ -25,9 +25,9 @@ describe('/todos/ endpoint', () => {
     const response = await request(app).get(endpointUrl);
     expect(response.statusCode).toBe(200);
     expect(Array.isArray(response.body)).toBeTruthy();
-    expect(response.body[0].title).toBeDefined();
-    expect(response.body[0].done).toBeDefined();
-    item = response.body[0];
+    expect(response.body[3].title).toBeDefined();
+    expect(response.body[3].done).toBeDefined();
+    item = response.body[3];
   });
   it('should GET an item from /todos/:id', async () => {
     const response = await request(app).get(`${endpointUrl}${item._id}`);
@@ -52,6 +52,17 @@ describe('/todos/ endpoint', () => {
     const response = await request(app)
       .put(endpointUrl + '61312d4607acac1b7308977a')
       .send({ ...newTodo, done: false });
+    expect(response.statusCode).toBe(404);
+    expect(response.body.message).toBe('item not found');
+  });
+  it('should DELETE an item from /todos/:id', async () => {
+    const response = await request(app).delete(`${endpointUrl}${item._id}`);
+    expect(response.statusCode).toBe(200);
+    expect(response.body.title).toBe(item.title);
+    expect(response.body.done).toBeDefined();
+  });
+  it('should return not found when updating', async () => {
+    const response = await request(app).delete(endpointUrl + '61312d4607acac1b7308977a');
     expect(response.statusCode).toBe(404);
     expect(response.body.message).toBe('item not found');
   });

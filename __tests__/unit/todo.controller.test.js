@@ -4,10 +4,8 @@ const todoModel = require('../../models/todo.model');
 const newTodo = require('../mock/data.json');
 const allTodos = require('../mock/todos.json');
 
-todoModel.create = jest.fn();
-todoModel.find = jest.fn();
-todoModel.findById = jest.fn();
-todoModel.findByIdAndUpdate = jest.fn();
+jest.mock('../../models/todo.model');
+
 const todoId = '61312cf0f456031ad7a8c2fa';
 let req, res, next;
 
@@ -131,6 +129,37 @@ describe('TodoController.updateTodo', () => {
   it('should return 404 when item not found', async () => {
     todoModel.findByIdAndUpdate.mockReturnValue(null);
     await todoController.updateTodo(req, res, next);
+    expect(res.statusCode).toBe(404);
+    expect(res._isEndCalled()).toBeTruthy();
+  });
+});
+describe('TodoController.deleteTodo', () => {
+  it('should have a deleteTodo function', () => {
+    expect(typeof todoController.deleteTodo).toBe('function');
+  });
+  it('should delete with todoModel.findByIdAndDelete', async () => {
+    req.params.id = todoId;
+    await todoController.deleteTodo(req, res, next);
+    expect(todoModel.findByIdAndDelete).toHaveBeenCalledWith(todoId);
+  });
+  it('should response 200 status code', async () => {
+    req.params.id = todoId;
+    todoModel.findByIdAndDelete.mockReturnValue(newTodo);
+    await todoController.deleteTodo(req, res, next);
+    expect(res.statusCode).toBe(200);
+    expect(res._isEndCalled()).toBeTruthy();
+    expect(res._getJSONData()).toStrictEqual(newTodo);
+  });
+  it('should handle errors when connecting the DB', async () => {
+    const errorMessage = { message: '500 error' };
+    const rejectedPromise = Promise.reject(errorMessage);
+    todoModel.findByIdAndDelete.mockReturnValue(rejectedPromise);
+    await todoController.deleteTodo(req, res, next);
+    expect(next).toBeCalledWith(errorMessage);
+  });
+  it('should return 404 when item not found', async () => {
+    todoModel.findByIdAndDelete.mockReturnValue(null);
+    await todoController.deleteTodo(req, res, next);
     expect(res.statusCode).toBe(404);
     expect(res._isEndCalled()).toBeTruthy();
   });
